@@ -6,11 +6,12 @@ from scipy.special import factorial
 from scipy import stats
 
 
+RANDOM_SEED = 166
 DIRECTORY_PLOTS = 'plots\\'
 
 
-def plot_distribution_histogram_with_density(distribution, size_list, bins):
-    DENSITY_POINTS_IN_BIN = 10
+def plot_distribution_histogram_with_density(distribution, size_list, bins=None):
+    DENSITY_POINTS_IN_BIN = 50
 
     fig_num = len(size_list)
     fig, ax = plt.subplots(1, fig_num, figsize=(10, 5))
@@ -19,19 +20,25 @@ def plot_distribution_histogram_with_density(distribution, size_list, bins):
     plt.suptitle(f'{distribution.name} distribution')
     for i, size in enumerate(size_list):
         data = distribution.f_data_generator(size)
-        density_x = np.linspace(data.min(), data.max(), num=bins*DENSITY_POINTS_IN_BIN, endpoint=True)
+
+        bins_num = bins if bins is not None else 3*int(np.power(size, 1/3))
+        density_x = np.linspace(data.min(), data.max(), num=bins_num*DENSITY_POINTS_IN_BIN, endpoint=True)
         density_y = np.vectorize(distribution.f_density)(density_x)
 
         ax[i].hist(data, density=True, histtype='bar', color='grey',
-                   edgecolor='black', alpha=0.3, bins=bins)
+                   edgecolor='black', alpha=0.3, bins=bins_num)
         ax[i].plot(density_x, density_y, color='black', linewidth=1)
         ax[i].set_title(f'n = {size}')
-        ax[i].set_ylabel("density")
+        ax[i].set_xlabel('numbers')
+        ax[i].set_ylabel('density')
 
     plt.savefig(f'{DIRECTORY_PLOTS}{distribution.name}')
 
 
 if __name__ == '__main__':
+
+    np.random.seed(RANDOM_SEED)
+
     normal = Distribution(
         'normal',
         lambda x: stats.norm.pdf(x),
@@ -61,6 +68,6 @@ if __name__ == '__main__':
     distributions = [normal, cauchy, laplace, poisson, uniform]
     size_list = [10, 50, 1000]
     for dist in distributions:
-        plot_distribution_histogram_with_density(dist, size_list, 20)
+        plot_distribution_histogram_with_density(dist, size_list)
 
     print('lab1')
