@@ -13,14 +13,32 @@ PATH_PLOTS = 'plots\\'
 NUM_GENERATE_SAMPLE = 1000
 
 
-def correct_digits(num):
-    return max(0, round(-math.log10(abs(num))))
-
-
 def plot_boxplot(df_data, name):
-    fig, ax = plt.subplots()
-    sns.boxplot(data=df_data, ax=ax)
+    sns.set_theme(style="whitegrid")
+    fig, ax = plt.subplots(figsize=(10, 6))
+
+    sns.boxplot(data=df_data, orient='h', palette="Blues", ax=ax)
+    ax.set_xlabel('values')
+    ax.set_title(f'{name} distribution')
+
     plt.savefig(f'{PATH_PLOTS}{name}')
+
+
+def df_outliners(distribution, data_size_list):
+    df_summary_list = []
+    for data_size in data_size_list:
+        df_outliners = distribution.count_outliners(data_size, NUM_GENERATE_SAMPLE)
+        df_summary = pd.DataFrame()
+        df_summary[f'{distribution.name} distribution'] = [
+            f'$n = {data_size}$',
+        ]
+        for col in df_outliners.columns:
+            df_summary[col] = [
+                df_outliners[col].mean()
+            ]
+        df_summary_list.append(df_summary)
+    df_res = pd.concat(df_summary_list, ignore_index=True)
+    return df_res
 
 
 if __name__ == '__main__':
@@ -56,5 +74,7 @@ if __name__ == '__main__':
     for dist in distributions:
         df_data = dist.df_data(size_list)
         plot_boxplot(df_data, dist.name)
+        outliners_df = df_outliners(dist, size_list)
+        k = 0
 
     print('lab3')
