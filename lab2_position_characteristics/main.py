@@ -24,15 +24,24 @@ def df_distribution_characteristics(distribution, data_size_list):
         df_summary[f'{distribution.name} distribution'] = [
             f'$n = {data_size}$',
             '$E(z)$',
-            '$D(z)$'
+            '$D(z)$',
+            '$\hat{E}(z)$',
+            'E-sqrt(D)',
+            'E+sqrt(d)'
         ]
         for col in df_characteristics.columns:
             z = df_characteristics[col].to_numpy()
+
+            mean = DataPositionCharacteristics.mean(z)
+            variance = DataPositionCharacteristics.variance(z)
             df_summary[col] = [
                 '',
-                round(DataPositionCharacteristics.mean(z),
-                      correct_digits(DataPositionCharacteristics.variance(z))),
-                DataPositionCharacteristics.variance(z)
+                mean,
+                variance,
+                round(mean,
+                      correct_digits(np.sqrt(variance))),
+                mean - np.sqrt(variance),
+                mean + np.sqrt(variance)
             ]
         df_summary_list.append(df_summary)
     df_res = pd.concat(df_summary_list, ignore_index=True)
@@ -69,11 +78,11 @@ if __name__ == '__main__':
     )
 
     distributions = [normal, cauchy, laplace, poisson, uniform]
-    size_list = [10, 50, 1000]
+    size_list = [10, 100, 1000]
     for dist in distributions:
         df_res = df_distribution_characteristics(dist, size_list)
 
-        df_res.columns = [f'{dist.name} distribution', '\overline{x}', 'med\:x', '$z_R$', '$z_Q$', '$z_{tr}$']
+        df_res.columns = [f'{dist.name} distribution', '$\overline{x}$', '$med\:x$', '$z_R$', '$z_Q$', '$z_{tr}$']
         latex_table = df_res.to_latex(index=False, column_format='l|lllll', escape=False)
 
         file = open(f'{PATH_LATEX_TABLES}{dist.name}.tex', 'w')

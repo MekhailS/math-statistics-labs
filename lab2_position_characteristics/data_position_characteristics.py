@@ -15,7 +15,7 @@ class DataPositionCharacteristics:
 
     @staticmethod
     def half_sum(data):
-        return (data[0] + data[-1]) // 2
+        return (data[0] + data[-1]) / 2
 
     @staticmethod
     def quartile_half_sum(data):
