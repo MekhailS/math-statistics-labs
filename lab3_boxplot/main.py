@@ -10,6 +10,7 @@ from lab3_boxplot.distribution import Distribution
 
 
 PATH_PLOTS = 'plots\\'
+PATH_TABLES = 'tables\\'
 NUM_GENERATE_SAMPLE = 1000
 
 
@@ -27,7 +28,7 @@ def plot_boxplot(df_data, name):
 def df_outliners(distribution, data_size_list):
     df_summary_list = []
     for data_size in data_size_list:
-        df_outliners = distribution.count_outliners(data_size, NUM_GENERATE_SAMPLE)
+        df_outliners = distribution.count_outliers(data_size, NUM_GENERATE_SAMPLE)
         df_summary = pd.DataFrame()
         df_summary[f'{distribution.name} distribution'] = [
             f'$n = {data_size}$',
@@ -74,7 +75,12 @@ if __name__ == '__main__':
     for dist in distributions:
         df_data = dist.df_data(size_list)
         plot_boxplot(df_data, dist.name)
-        outliners_df = df_outliners(dist, size_list)
-        k = 0
+
+        outliers = df_outliners(dist, size_list)
+        latex_table = outliers.to_latex(index=False, column_format='l|l', escape=False)
+
+        file = open(f'{PATH_TABLES}{dist.name}.tex', 'w')
+        file.write(latex_table)
+        file.close()
 
     print('lab3')

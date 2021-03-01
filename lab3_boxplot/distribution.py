@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 
-from lab3_boxplot.data_characteristics import num_outliners
+from lab3_boxplot.data_characteristics import num_outliers
 
 class Distribution:
     def __init__(self, name, f_density, f_data_generator):
@@ -16,10 +16,10 @@ class Distribution:
 
         return pd.concat(df_data, ignore_index=False, axis=1)
 
-    def count_outliners(self, data_size, num_samples_generate):
-        df = pd.DataFrame(columns=['num_outliners'])
+    def count_outliers(self, data_size, num_samples_generate):
+        df = pd.DataFrame(columns=['outliers number'])
         for i_row in range(num_samples_generate):
             data = self.f_data_generator(data_size)
-            df.loc[i_row] = num_outliners(data)/data_size
+            df.loc[i_row] = num_outliers(data) / data_size
 
         return df
