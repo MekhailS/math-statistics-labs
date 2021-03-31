@@ -1,4 +1,5 @@
 from scipy import stats
+from statistics import variance
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
@@ -7,32 +8,36 @@ from lab5_correlation.correlation_coefficients import CorrelationCoefficients
 
 
 def equiprobability_ellipse(data_generator, size, params, path):
-    for param in params:
-        _, sp = plt.subplots(1, len(params), figsize=(16, 6))
-        for cor_coef, subplot in zip(params, sp):
-            sample = data_generator(size, param)
-            x = sample[:, 0]
-            y = sample[:, 1]
-            vx = np.var(x)
-            vy = np.var(y)
-            angle = np.arctan(2 * np.sqrt(vx) * np.sqrt(vy) * cor_coef / (vx - vy)) / 2
-            w = 5 * np.sqrt(vx * (np.cos(angle)) ** 2 + cor_coef * np.sqrt(vx) * np.sqrt(vy) * np.sin(2 * angle) + vy * (
-                np.sin(angle)) ** 2)
-            h = 5 * np.sqrt(vx * (np.sin(angle)) ** 2 - cor_coef * np.sqrt(vx) * np.sqrt(vy) * np.sin(2 * angle) + vy * (
-                np.cos(angle)) ** 2)
-            ell = Ellipse(xy=(np.mean(x), np.mean(y)), width=w, height=h,
-                          angle=np.rad2deg(angle), fill=False)
+    _, sp = plt.subplots(1, len(params), figsize=(16, 6))
+    for cor_coef, subplot in zip(params, sp):
+        sample = data_generator(size, cor_coef)
+        x = sample[:, 0]
+        y = sample[:, 1]
+        vx = np.var(x)
+        vy = np.var(y)
+        mean_x = np.mean(x)
+        mean_y = np.mean(y)
 
-            subplot.scatter(x, y)
-            subplot.add_patch(ell)
+        def ellipse_equation(x, y):
+            return (x-mean_x)**2/vx - 2*cor_coef*(x-mean_x)*(y-mean_y)/(np.sqrt(vx*vy)) + (y-mean_y)**2/vy
+        R = np.max(ellipse_equation(x, y))
 
-            title = f"n = {size} rho = {cor_coef}"
+        x_grid = np.linspace(np.min(x) - 2, np.max(x) + 2, 500)
+        y_grid = np.linspace(np.min(y)-2, np.max(y) + 2, 500)
+        xx, yy = np.meshgrid(x_grid, y_grid)
+        z = ellipse_equation(xx, yy)
 
-            subplot.set_title(title)
-            subplot.set_xlabel("X")
-            subplot.set_ylabel("Y")
+        subplot.contour(xx, yy, z, [R])
 
-        plt.savefig(f"{path}ellipse_{size}.png")
+        subplot.scatter(x, y)
+
+        title = f"n = {size} rho = {cor_coef}"
+
+        subplot.set_title(title)
+        subplot.set_xlabel("X")
+        subplot.set_ylabel("Y")
+
+    plt.savefig(f"{path}ellipse_{size}.png")
 
 
 def df_correlation(data_generator, params, num_iterations, name, size):
@@ -46,7 +51,7 @@ def df_correlation(data_generator, params, num_iterations, name, size):
         )
         df_summary = pd.DataFrame()
         df_summary[f'{name} n = {size}'] = [
-            f'$p = {param}$',
+            f'$\\rho = {param}$',
             '$E(z)$',
             '$E(z^2)$',
             '$D(z)$',
@@ -57,7 +62,7 @@ def df_correlation(data_generator, params, num_iterations, name, size):
 
             mean = round(np.mean(z), DIGITS_TO_KEEP)
             mean_pow2 = round(np.mean(z ** 2), DIGITS_TO_KEEP)
-            variance = round(np.var(z), DIGITS_TO_KEEP)
+            variance = round(mean_pow2 - mean**2, DIGITS_TO_KEEP)
             df_summary[f'${col}$'] = [
                 '',
                 mean,
@@ -83,6 +88,7 @@ if __name__ == '__main__':
     dist_normal = lambda size, cor_coef: \
         stats.multivariate_normal.rvs([0, 0], [[1, cor_coef], [cor_coef, 1]], size)
     for size in SAMPLE_SIZE:
+        '''
         df_corr = df_correlation(
             dist_normal,
             DIST_PARAMETERS,
@@ -90,13 +96,14 @@ if __name__ == '__main__':
             'normal 2d',
             size
         )
-        latex_table = df_corr.to_latex(index=False, column_format='l|lll', escape=False)
-        file = open(f'{PATH_LATEX_TABLES}{df_corr.columns[0]}.tex', 'w')
-        file.write(latex_table)
-        file.close()
+        '''
+        #latex_table = df_corr.to_latex(index=False, column_format='l|lll', escape=False)
+        #file = open(f'{PATH_LATEX_TABLES}{df_corr.columns[0]}.tex', 'w')
+        #file.write(latex_table)
+        #file.close()
         equiprobability_ellipse(dist_normal, size, DIST_PARAMETERS, PATH_PLOTS)
 
-    dist_mixture_normal = lambda size, no_param: \
+    dist_mixture_normal = lambda size, _: \
         0.9 * stats.multivariate_normal.rvs([0, 0], [[1, 0.9], [0.9, 1]], size) + \
         0.1 * stats.multivariate_normal.rvs([0, 0], [[10, -0.9], [-0.9, 10]], size)
     for size in SAMPLE_SIZE:
