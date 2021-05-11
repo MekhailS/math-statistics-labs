@@ -30,7 +30,7 @@ def main():
 
         print(name)
         print(f"b_0_l2 = {b_0_l2} ; b_1_l2 = {b_1_l2} \n "
-              f"b_0_l1 = {b_1_l1} ; b_1_l1 = {b_1_l1}")
+              f"b_0_l1 = {b_0_l1} ; b_1_l1 = {b_1_l1}")
 
         plt.plot(x, y_target, 'ko', mfc='none')
         plt.plot(x, y_truth, )
