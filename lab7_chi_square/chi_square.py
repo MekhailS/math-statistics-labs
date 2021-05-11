@@ -4,12 +4,13 @@ from scipy import stats
 
 class ChiSquare:
 
-    def __init__(self,  alpha, start, end):
+    def __init__(self, hypothesis, alpha, start, end):
+        self.hypothesis = hypothesis
+
         self.alpha = alpha
         self.start = start
         self.end = end
 
-        self.hypothesis = None
         self.__k = None
         self.chi_square = None
         self.quantile = None
@@ -21,9 +22,8 @@ class ChiSquare:
 
         self.borders = None
 
-    def fit(self, sample, hypothesis):
+    def fit(self, sample ):
         sample = np.asarray(sample)
-        self.hypothesis = hypothesis
 
         self.__k = ChiSquare.__calc_k(sample)
         self.quantile = stats.chi2.ppf(1 - self.alpha, self.__k)
@@ -34,7 +34,7 @@ class ChiSquare:
         self.chi_square = np.sum((self.freq - len(sample) * self.probabilities)**2 / self.probabilities * len(sample))
         self.passed = self.chi_square < self.quantile
         
-        self.borders = list(zip([r'-\infty'] + borders, borders + [r'\infty']))
+        self.borders = list(zip([r'-\infty'] + list(borders), list(borders) + [r'\infty']))
         return self.passed, self.chi_square, self.quantile, self.borders, self.probabilities, self.freq
 
     def __find_probabilities(self, sample, borders):
@@ -56,4 +56,4 @@ class ChiSquare:
 
     @staticmethod
     def __calc_k(sample):
-        return np.ceil(1.72 * np.power(len(sample), 1/3))
+        return int(np.floor(1.72 * np.power(len(sample), 1/3)))
