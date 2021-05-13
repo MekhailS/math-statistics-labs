@@ -21,8 +21,10 @@ class ChiSquare:
         self.freq = None
 
         self.borders = None
+        self.sample_size = None
 
-    def fit(self, sample ):
+    def fit(self, sample):
+        self.sample_size = len(sample)
         sample = np.asarray(sample)
 
         self.__k = ChiSquare.__calc_k(sample)
@@ -31,7 +33,7 @@ class ChiSquare:
         borders = np.linspace(self.start, self.end, num=self.__k - 1)
         self.__find_probabilities(sample, borders)
 
-        self.chi_square = np.sum((self.freq - len(sample) * self.probabilities)**2 / self.probabilities * len(sample))
+        self.chi_square = np.sum((self.freq - len(sample) * self.probabilities)**2 / (self.probabilities * len(sample)))
         self.passed = self.chi_square < self.quantile
         
         self.borders = list(zip([r'-\infty'] + list(borders), list(borders) + [r'\infty']))

@@ -22,14 +22,12 @@ def build_df_chi_square(chi_square: ChiSquare, format_for_report=False):
     df['delta'] = chi_square.borders
     df['n'] = chi_square.freq
     df['p'] = chi_square.probabilities
-    df['np'] = chi_square.freq * chi_square.probabilities
-    df['n-np'] = chi_square.freq - chi_square.freq * chi_square.probabilities
-    df[r'{n-np}^2/{np}'] = (chi_square.freq - chi_square.freq * chi_square.probabilities)**2 / chi_square.freq * chi_square.probabilities
+    df['np'] = chi_square.sample_size * chi_square.probabilities
+    df['n-np'] = chi_square.freq - chi_square.sample_size * chi_square.probabilities
+    df[r'{n-np}^2/{np}'] = (chi_square.freq - chi_square.sample_size * chi_square.probabilities)**2 / (chi_square.sample_size * chi_square.probabilities)
 
     # add summary
     df = df.append(df.sum(numeric_only=True), ignore_index=True)
-    df.at[len(df)-1, 'np'] = np.nan
-    df.at[len(df)-1, 'n-np'] = np.nan
 
     if format_for_report:
         df.fillna('', inplace=True)
@@ -58,8 +56,11 @@ def main():
     chi_square = ChiSquare(hypothesis_normal, alpha, start, end)
     for name, generator in sample_generators_dict.items():
         sample = generator()
+        print(name)
         print(f'Max-likelihood estimation: {MaxLikelihood.estimate_as_normal(sample)}')
         chi_square.fit(sample)
+
+        print(f'passed: {chi_square.passed} ; quantile: {chi_square.quantile}')
 
         df_report = build_df_chi_square(chi_square, format_for_report=True)
         latex_table = df_report.to_latex(index=True, column_format='l|llllll', escape=False)
