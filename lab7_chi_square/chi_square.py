@@ -28,7 +28,7 @@ class ChiSquare:
         sample = np.asarray(sample)
 
         self.__k = ChiSquare.__calc_k(sample)
-        self.quantile = stats.chi2.ppf(1 - self.alpha, self.__k)
+        self.quantile = stats.chi2.ppf(1 - self.alpha, self.__k - 1)
 
         borders = np.linspace(self.start, self.end, num=self.__k - 1)
         self.__find_probabilities(sample, borders)
@@ -58,4 +58,4 @@ class ChiSquare:
 
     @staticmethod
     def __calc_k(sample):
-        return int(np.floor(1.72 * np.power(len(sample), 1/3)))
+        return int(np.ceil(1.72 * np.power(len(sample), 1/3)))
